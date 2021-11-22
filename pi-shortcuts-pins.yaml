@@ -1,0 +1,83 @@
+---
+
+# gpio to row and column lines
+
+gpio:
+   in: row
+   rows: 
+     - row: 1
+       gpio: 18
+     - row: 2
+       gpio: 19
+     - row: 3
+       gpio: 20
+     - row: 4
+       gpio: 21
+
+   columns:
+     - column: 1
+       gpio: 22
+     - column: 2
+       gpio: 23
+     - column: 3
+       gpio: 24
+   
+
+# keypad labels to row and column lines
+
+keymap:
+   - key: "1"
+     col: 1
+     row: 1
+
+   - key: "2"
+     col: 2
+     row: 1
+
+   - key: "3"
+     col: 3
+     row: 1
+
+   - key: "4"
+     col: 1
+     row: 2
+
+   - key: "5"
+     col: 2
+     row: 2
+
+   - key: "6"
+     col: 3
+     row: 2
+
+   - key: "7"
+     col: 1
+     row: 3
+
+   - key: "8"
+     col: 2
+     row: 3
+
+   - key: "9"
+     col: 3
+     row: 3
+
+   - key: "0"
+     col: 2
+     row: 4
+
+   - key: "*"
+     col: 1
+     row: 4
+
+   - key: "#"
+     col: 3
+     row: 4
+
+# display hook up
+
+#display:
+#    item: 1
+
+
+

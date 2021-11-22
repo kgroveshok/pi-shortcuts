@@ -1,0 +1,35 @@
+---
+
+# actual short cuts to stuff into keyboard
+
+shortcuts:
+   layercycle: "#"
+   casetoggle: "*"
+   layers:
+      - layer: 1
+        title: General
+        buttons:
+            - key: "1"
+              label: "Hello"
+              string: "hello"
+            - key: "2"
+              label: "My name"
+              string: "Kevin Groves"
+            - key: "3"
+              label: "What?"
+              string: "Is that noise?"
+                    
+      - layer: 2
+        title: Email
+        buttons:
+            - key: "1"
+              label: "Hello you"
+              string: "hello you"
+            - key: "2"
+              label: "My name bye"
+              string: "Kevin Groves bye"
+            - key: "3"
+              label: "What? aaa"
+              string: "Is that noise? aa"
+                       
+
