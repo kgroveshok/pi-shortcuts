@@ -6,9 +6,9 @@ gpio:
    in: row
    rows: 
      - row: 1
-       gpio: 18
+       gpio: 16
      - row: 2
-       gpio: 19
+       gpio: 26
      - row: 3
        gpio: 20
      - row: 4
@@ -16,11 +16,11 @@ gpio:
 
    columns:
      - column: 1
-       gpio: 22
+       gpio: 17
      - column: 2
-       gpio: 23
+       gpio: 27
      - column: 3
-       gpio: 24
+       gpio: 22
    
 
 # keypad labels to row and column lines

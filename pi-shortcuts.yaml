@@ -11,25 +11,34 @@ shortcuts:
         buttons:
             - key: "1"
               label: "Hello"
-              string: "hello"
+              string: "h e l l o TAB A r e SPACE y o u SPACE o k ?"
             - key: "2"
               label: "My name"
-              string: "Kevin Groves"
+              string: "K e v i n SPACE G r o v e s"
             - key: "3"
               label: "What?"
-              string: "Is that noise?"
+              string: "I s SPACE t h a t SPACE n o i s e ?"
                     
       - layer: 2
         title: Email
         buttons:
             - key: "1"
-              label: "Hello you"
-              string: "hello you"
+              label: "Hi"
+              string: "H e l l o , ENTER ENTER"
             - key: "2"
-              label: "My name bye"
-              string: "Kevin Groves bye"
+              label: "Kev"
+              string: "ENTER ENTER K e v , ENTER"
             - key: "3"
-              label: "What? aaa"
-              string: "Is that noise? aa"
+              label: "Best Wishes"
+              string: "ENTER ENTER B e s t SPACE w i s h e s ENTER K e v i n SPACE G r o v e s"
                        
+
+      - layer: 3
+        title: Admin
+        buttons:
+            - key: "0"
+              label: "Shutdown"
+              string: "S h u t d o w n"
+
+
 
