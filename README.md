@@ -39,3 +39,10 @@ brown         21           40
 
 
 
+install_i2c.sh - Sets up the i2c for the OLED display
+install_usb_hid.sh - This USB HID config worked for me. Others didn't so if not then look around too. Don't know why the others didnt, perhaps
+Linux (Ubuntu) didn't like the others and some examples showed connected with Windows. 
+
+Update /etc/rc.local to run /home/pi/usbhid.sh script at start up as the HID feature does not survive reboots. Can then run the python scripts.
+
+
