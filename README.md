@@ -11,7 +11,7 @@ NOTE: Will be swapping round keyboard mapping for UK keyboard and not the defaul
     Examples: LS-a CTRL-ALT-t
 
 * TODO provide scrolling in an external file (can use this for showing cron based external data)
-
+* TODO Do auto shift key modifier for cap letters and symbols to make for easier reading
 
 * TODO Installation
 
