@@ -101,6 +101,84 @@ NULL_CHAR = chr(0)
 
 HIDMAP = {
 
+   'a' : chr(4) ,
+   'b' : chr(5) ,
+   'c' : chr(6) ,
+   'd' : chr(7) ,
+   'e' : chr(8) ,
+   'f' : chr(9) ,
+   'g' : chr(10) ,
+   'h' : chr(11) ,
+   'i' : chr(12) ,
+   'j' : chr(13) ,
+   'k' : chr(14) ,
+   'l' : chr(15) ,
+   'm' : chr(16) ,
+   'n' : chr(17) ,
+   'o' : chr(18) ,
+   'p' : chr(19) ,
+   'q' : chr(20) ,
+   'r' : chr(21) ,
+   's' : chr(22),
+   't' : chr(23) ,
+   'u' : chr(24),
+   'v' : chr(25) ,
+   'w' : chr(26) ,
+   'x' : chr(27) ,
+   'y' : chr(28) ,
+   'z' : chr(29),
+
+   '1' : chr(30) ,
+   '2' : chr(31) ,
+   '3' : chr(32) ,
+   '4' : chr(33) ,
+   '5' : chr(34) ,
+   '6' : chr(35),
+   '7' : chr(36) ,
+   '8' : chr(37) ,
+   '9' : chr(38) ,
+   '0' : chr(39) ,
+
+
+   ' ' : chr(44) ,
+   'SPACE' : chr(44) ,
+   'TAB' : chr(43) ,
+   'ENTER' : chr(40) ,
+   'ESC' : chr(41) ,
+   'BACK' : chr(42),
+   'F1' : chr(58) ,
+   'F2' : chr(59) ,
+   'F3' : chr(60),
+   'F4' : chr(61) ,
+   'F5' : chr(62) ,
+   'F6' : chr(63) ,
+   'F7' : chr(64) ,
+   'F8' : chr(65) ,
+   'F9' : chr(66) ,
+   'F10' : chr(67) ,
+   'F11' : chr(68) ,
+   'F12' : chr(69) ,
+
+
+   '-' : chr(45) ,
+   '=' : chr(46),
+   '[' : chr(47) ,
+   ']' : chr(48) ,
+   '\\' : chr(49) ,
+   '#' : chr(50) ,
+   ';' : chr(51) ,
+   '\'' : chr(52),
+   ',' : chr(54) ,
+   '.' : chr(55) ,
+   '/' : chr(56),
+
+
+}
+
+
+
+HIDMAPwas = {
+
    'a' : NULL_CHAR*2+chr(4)+NULL_CHAR*5 ,
    'b' : NULL_CHAR*2+chr(5)+NULL_CHAR*5 ,
    'c' : NULL_CHAR*2+chr(6)+NULL_CHAR*5 ,
@@ -168,7 +246,7 @@ HIDMAP = {
    '0' : NULL_CHAR*2+chr(39)+NULL_CHAR*5 ,
 
    '!' : chr(2)+chr(32)+NULL_CHAR+chr(30)+NULL_CHAR*5 ,
-   '@' : chr(2)+chr(32)+NULL_CHAR+chr(31)+NULL_CHAR*5 ,
+   '"' : chr(2)+chr(32)+NULL_CHAR+chr(31)+NULL_CHAR*5 ,
    '#' : chr(2)+chr(32)+NULL_CHAR+chr(32)+NULL_CHAR*5 ,
    '$' : chr(2)+chr(32)+NULL_CHAR+chr(33)+NULL_CHAR*5 ,
    '%' : chr(2)+chr(32)+NULL_CHAR+chr(34)+NULL_CHAR*5 ,
@@ -204,12 +282,12 @@ HIDMAP = {
    '[' : NULL_CHAR*2+chr(47)+NULL_CHAR*5 ,
    ']' : NULL_CHAR*2+chr(48)+NULL_CHAR*5 ,
    '\\' : NULL_CHAR*2+chr(49)+NULL_CHAR*5 ,
-   '£' : NULL_CHAR*2+chr(50)+NULL_CHAR*5 ,
+   '#' : NULL_CHAR*2+chr(50)+NULL_CHAR*5 ,
    ';' : NULL_CHAR*2+chr(51)+NULL_CHAR*5 ,
    '\'' : NULL_CHAR*2+chr(52)+NULL_CHAR*5 ,
    ',' : NULL_CHAR*2+chr(54)+NULL_CHAR*5 ,
    '.' : NULL_CHAR*2+chr(55)+NULL_CHAR*5 ,
-   '\/`' : NULL_CHAR*2+chr(56)+NULL_CHAR*5 ,
+   '/' : NULL_CHAR*2+chr(56)+NULL_CHAR*5 ,
 
    '_' : chr(2)+chr(32)+NULL_CHAR+chr(45)+NULL_CHAR*5 ,
    '+' : chr(2)+chr(32)+NULL_CHAR+chr(46)+NULL_CHAR*5 ,
@@ -218,7 +296,7 @@ HIDMAP = {
    '|' : chr(2)+chr(32)+NULL_CHAR+chr(49)+NULL_CHAR*5 ,
    '~' : chr(2)+chr(32)+NULL_CHAR+chr(50)+NULL_CHAR*5 ,
    ':' : chr(2)+chr(32)+NULL_CHAR+chr(51)+NULL_CHAR*5 ,
-   '#' : chr(2)+chr(32)+NULL_CHAR+chr(52)+NULL_CHAR*5 ,
+   '@' : chr(2)+chr(32)+NULL_CHAR+chr(52)+NULL_CHAR*5 ,
    '¬' : chr(2)+chr(32)+NULL_CHAR+chr(53)+NULL_CHAR*5 ,
    '<' : chr(2)+chr(32)+NULL_CHAR+chr(54)+NULL_CHAR*5 ,
    '>' : chr(2)+chr(32)+NULL_CHAR+chr(55)+NULL_CHAR*5 ,
@@ -230,30 +308,78 @@ HIDMAP = {
 
 
 
-
-
-
 def write_report(report):
     with open('/dev/hidg0', 'rb+') as fd:
         fd.write(report.encode())
 
 def sendUSBHID( seq ) :
-    
     for c in seq.split(' '):
         # recalc ascii to key 
    #     key = ord(c) - ord('a') + 4
         print( c )
-        try: 
-        # Press a
-            print( HIDMAP[c] )
-            write_report(HIDMAP[c])
-            #write_report(chr(2) + NULL_CHAR*2+chr(key)+NULL_CHAR*5)
 
-        # Release keys
-            write_report(chr(2)+ NULL_CHAR*8)
-            time.sleep(0.01)
-        except:
-            pass
+        if c == "PAUSE" :
+            time.sleep(1)
+        elif c != "" :
+            try: 
+
+                # break up the current sequence to get any modifiers as well as actual key
+
+                thiskey = c.split('-')
+
+
+                modflag=0x00
+
+                for mods in thiskey:
+                    print( mods)
+                    if mods == "LCTRL" or mods == "CTRL":
+                       modflag = modflag | 0x01
+                    if mods == "RCTRL":
+                       modflag = modflag | 0x10
+                    if mods == "LS" or mods == "SHIFT" :
+                       modflag = modflag | 0x02
+                    if mods == "RS" :
+                       modflag = modflag | 0x20
+                    if mods == "LALT"  or mods == "ALT" :
+                       modflag = modflag | 0x04
+                    if mods == "RALT"  :
+                       modflag = modflag | 0x40
+                    if mods == "LMETA"  or mods == "META" :
+                       modflag = modflag | 0x08
+                    if mods == "RMETA"  :
+                       modflag = modflag | 0x80
+
+                print( modflag)
+                   
+                # need to reemember '-' is a normal key too! So in this case last item will be empty
+
+                
+                actkey=thiskey[-1]
+                print("actkey")
+                print(actkey)
+                if actkey == "":
+                    actkey='-'
+                     
+                    
+
+            # Press a
+                # get HID ASCII map
+                sending = chr(modflag)+chr(modflag)+NULL_CHAR+HIDMAP[actkey]+NULL_CHAR*5
+
+                print("hidmap")
+                #print( HIDMAP[c] )
+    #            print("last hidmap")
+    #            print( HIDMAP[c[-1:]] )
+
+                write_report(sending)
+                #write_report(chr(2) + NULL_CHAR*2+chr(key)+NULL_CHAR*5)
+
+            # Release keys
+                write_report(chr(2)+ NULL_CHAR*8)
+                time.sleep(0.01)
+            except Exception as e:
+                print( "Error %s " % str(e))
+                pass
 
 class pinToChar():
 # Written by Chris Crumpacker
@@ -385,7 +511,7 @@ if __name__ == '__main__':
         draw.text((30, 24),       "line4" ,  font=font, fill=255)
         disp.image(image)
         disp.display()
-        pos += -4
+        pos += -5
         # Start over if text has scrolled completely off left side of screen.
         if pos < -maxwidth:
                 pos = startpos
