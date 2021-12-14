@@ -2,9 +2,10 @@
 
 # not pretty but trying to get a basic working prototype
 # TODO streamline the layer scanning
-# TODO handle more complex key mapping notation
 
+import os
 import yaml
+from pathlib import Path
 import sys
 import time
 import RPi.GPIO as GPIO
@@ -53,17 +54,9 @@ draw = ImageDraw.Draw(image)
 draw.rectangle((0,0,width,height), outline=0, fill=0)
 
 # Load default font.
+#font = ImageFont.truetype("/home/pi/Ubuntu-C.ttf",10)
 font = ImageFont.load_default()
-
-
-
-# Read pin wiring YAML file
-
-#with open("pi-shortcuts-pins.yaml", 'r') as stream:
-#    pinmap = yaml.safe_load(stream)
-
-
-#print( pinmap )
+font2 = ImageFont.truetype("/home/pi/Ubuntu-B.ttf",20)
 
 
 # Read shortcuts YAML file
@@ -73,28 +66,6 @@ with open("/home/pi/pi-shortcuts.yaml", 'r') as stream:
 
 
 print( shortcuts )
-
-#def pingToChar:
-#
-#    c = sys.stdin.read(1) # reads one byte at a time, similar to getchar()
-#    #str += c
-#
-#    return c
-
-#def charToPins( c ) :
-#   col=0
-#   row=0
-#   for k in pinmap['keymap']:
-#      if k['key'] == c:
-#         col = k['col']
-#         row = k['row']
-#         print( k )
-#   #for g in pinmap['gpio'] :
-#   #   print( g )
-#   #   if g['row'] == row and g['col'] == col :
-#   #      print( 
-#
-#   return   
 
 
 NULL_CHAR = chr(0)
@@ -309,17 +280,20 @@ HIDMAPwas = {
 
 
 def write_report(report):
+    # send HID encoding through to connected USB device
     with open('/dev/hidg0', 'rb+') as fd:
         fd.write(report.encode())
 
 def sendUSBHID( seq ) :
+    # Take a macro string and convert to HID sequences
+
     for c in seq.split(' '):
-        # recalc ascii to key 
-   #     key = ord(c) - ord('a') + 4
         print( c )
 
         if c == "PAUSE" :
-            time.sleep(1)
+            time.sleep( 1 )
+        if c == "PAUSE10" :
+            time.sleep( 10 )
         elif c != "" :
             try: 
 
@@ -350,19 +324,22 @@ def sendUSBHID( seq ) :
                        modflag = modflag | 0x80
 
                 print( modflag)
-                   
+
                 # need to reemember '-' is a normal key too! So in this case last item will be empty
 
-                
                 actkey=thiskey[-1]
                 print("actkey")
                 print(actkey)
                 if actkey == "":
                     actkey='-'
-                     
-                    
 
-            # Press a
+                # see if this is a single upper case letter and if so add a map for the lowercase + shift
+                # to make the config file easier to read
+
+                if actkey.isupper() and len(actkey) == 1 :
+                    modflag = modflag | 0x02
+                    actkey = actkey.lower()
+
                 # get HID ASCII map
                 sending = chr(modflag)+chr(modflag)+NULL_CHAR+HIDMAP[actkey]+NULL_CHAR*5
 
@@ -372,9 +349,8 @@ def sendUSBHID( seq ) :
     #            print( HIDMAP[c[-1:]] )
 
                 write_report(sending)
-                #write_report(chr(2) + NULL_CHAR*2+chr(key)+NULL_CHAR*5)
 
-            # Release keys
+                # Release keys
                 write_report(chr(2)+ NULL_CHAR*8)
                 time.sleep(0.01)
             except Exception as e:
@@ -459,6 +435,39 @@ class pinToChar():
                 GPIO.setup(self.COLUMN[j], GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
 
+def lineScroll( canvas, y, string, startpos, speed, spacing = 0 ) :
+   maxwidth=0
+   unused = 0
+#   startpos=width
+   pos = startpos
+
+   maxwidth, unused = canvas.textsize(string, font=font)
+   print("text width")
+   print(maxwidth)
+   x = pos
+   for i, cc in enumerate(string):
+         if x > width:
+             break;
+         if x < -10:
+            char_width, char_height = canvas.textsize(cc, font=font)
+            x += char_width + spacing
+            continue
+    # Draw text.
+         canvas.text((x, y), cc, font=font, fill=255)
+    # Increment x position based on chacacter width.
+         char_width, char_height = canvas.textsize(cc, font=font)
+         x += char_width + spacing
+         print(x)
+         print(cc)
+
+   pos += speed
+   # Start over if text has scrolled completely off left side of screen.
+   if pos < -maxwidth:
+           pos = width
+   return pos
+
+
+
 if __name__ == '__main__':
 
     # Initialize the keypad class
@@ -468,53 +477,95 @@ if __name__ == '__main__':
 
     layer = 1
 
-    cyclelayer=shortcuts['shortcuts']['layercycle']
+    cyclelayer = shortcuts['shortcuts']['layercycle']
     print( "Layer cycle %s", ( cyclelayer ) )
     curlayertitle=""
     labels1=""
     labels2=""
-    maxwidth=0
-    unused = 0
-    startpos=width
-    pos = startpos
+#    maxwidth=0
+#    unused = 0
+#    startpos=width
+#    pos = startpos
+    pos2 = width
+    pos3 = width
+    pos4 = width
     sending=""
+    motd_last=""
+    motd=""
     while True:
         # Draw a black filled box to clear the image.
         draw.rectangle((0,0,width,height), outline=0, fill=0)
 
-        # Display image
-        draw.rectangle((0,0,width,9), outline=255, fill=255)
-        draw.text((1, 0),       curlayertitle ,  font=font, fill=0)
+        # Display current layer title inverted
+        draw.rectangle((0,0,width,8), outline=255, fill=255)
+        draw.text((1, -1),       curlayertitle ,  font=font, fill=0)
 
-        draw.rectangle((60,0,width,9), outline=0, fill=0)
+        # Put in the current date and time 
+        draw.rectangle((60,-1,width,8), outline=0, fill=0)
         now = datetime.strftime(datetime.now(),"%d/%m %H:%M")
-        draw.text((61, 0),       now,  font=font, fill=255)
+        draw.text((61, -1),       now,  font=font, fill=255)
 #        draw.text((0, 8),       labels1,  font=font, fill=255)
-        draw.text((0, 16),       sending,  font=font, fill=255)
-        maxwidth, unused = draw.textsize(labels1, font=font)
-        x = pos
-        for i, cc in enumerate(labels1):
-             if x > width:
-                 break;
-             if x < -10:
-                char_width, char_height = draw.textsize(cc, font=font)
-                x += char_width
-                continue
-        # Draw text.
-             draw.text((x, 8), cc, font=font, fill=255)
-        # Increment x position based on chacacter width.
-             char_width, char_height = draw.textsize(cc, font=font)
-             x += char_width
+        # Display the last macro sent (just to use the row for now)
+#        draw.text((0, 16),       sending,  font=font, fill=255)
+
+
+#        # Scroll the macro options for this layer
+#        maxwidth, unused = draw.textsize(labels1, font=font)
+#        x = pos
+#        for i, cc in enumerate(labels1):
+#             if x > width:
+#                 break;
+#             if x < -10:
+#                char_width, char_height = draw.textsize(cc, font=font)
+#                x += char_width
+#                continue
+#        # Draw text.
+#             draw.text((x, 8), cc, font=font, fill=255)
+#        # Increment x position based on chacacter width.
+#             char_width, char_height = draw.textsize(cc, font=font)
+#             x += char_width
         #     print(x)
         #     print(cc)
 
-        draw.text((30, 24),       "line4" ,  font=font, fill=255)
+        pos2 = lineScroll( draw, 7, labels1, pos2, -5 )
+        pos3 = lineScroll( draw, 15, sending, pos3, -8 )
+
+        # refresh MOTD text
+
+
+        try:
+            motdfile = os.stat ( "/dev/shm/pi-shortcuts.motd" )
+
+#            motmod = motdfile [ stat.ST_MTIME ] 
+ 
+            if motd_last != motdfile :
+#            if True:
+                motd_last = motdfile
+                pos4=width
+                print("Reloading motd")
+                sending="MOTD Refreshed " + now
+                # file has been modified so reload
+                #ith open('/dev/shm/pi-shortcuts.motd') as f:
+                #   motd = f.readlines()
+                motd = Path('/dev/shm/pi-shortcuts.motd').read_text()
+                motd = motd.replace('\n', '')
+#                     motd = file.read().replace('\n', '')
+
+        except Exception as e:
+            motd = "MOTD: " +  str(e)
+            print(str(e))
+
+        pos4 = lineScroll( draw, 23, motd, pos4, -6, 4 )
+        # Display a simple fixed string on the bottom row for now
+        #draw.text((30, 24),       "line4" ,  font=font, fill=255)
+
+        # Render OLED
         disp.image(image)
         disp.display()
-        pos += -5
+#        pos += -5
         # Start over if text has scrolled completely off left side of screen.
-        if pos < -maxwidth:
-                pos = startpos
+#        if pos < -maxwidth:
+#                pos = startpos
 #        time.sleep(.1)
 
 
@@ -565,7 +616,23 @@ if __name__ == '__main__':
         if c == cyclelayer :
             layer += 1
             print( "Next layer %s", ( layer ) )
+            foundlayer = False
+            while not foundlayer:
+                for layermap in shortcuts['shortcuts']['layers'] :
+                       if layermap['layer'] == layer :
+                           #print( layermap )
+                           foundlayer = True
+                           curlayertitle=layermap['title']
+                if not foundlayer :
+                    layer = 1
 
+            # Draw a black filled box to clear the image.
+            draw.rectangle((0,0,width,height), outline=0, fill=0)
+            draw.text((1, 8),       curlayertitle ,  font=font2, fill=255)
+
+            disp.image(image)
+            disp.display()
+            time.sleep(0.25)
 
 
 

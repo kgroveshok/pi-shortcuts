@@ -21,6 +21,13 @@ install_usb_hid.sh - This USB HID config worked for me. Others didn't so if not 
 Linux (Ubuntu) didn't like the others and some examples showed connected with Windows. 
 
 Update /etc/rc.local to run /home/pi/usbhid.sh script at start up as the HID feature does not survive reboots. Can then run the python scripts.
+
+
+/home/pi/usbhid.sh 
+
+/usr/bin/python /home/pi/pi-shortcuts.py >/dev/null 2>&1 &
+
+
 pip install PyYAML
 
 Using details from:
