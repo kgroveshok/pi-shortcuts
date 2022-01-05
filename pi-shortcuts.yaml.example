@@ -3,8 +3,9 @@
 # actual short cuts to stuff into keyboard
 
 shortcuts:
-   layercycle: "#"
-   casetoggle: "*"
+   defaults:
+        layercycle: "#"
+        paneltoggle: "*"
    layers:
       - layer: 1
         title: General
@@ -18,6 +19,12 @@ shortcuts:
             - key: "3"
               label: "What?"
               string: "LS-i s SPACE t h a t SPACE n o i s e ?"
+            - key: "JACK1"
+              label: "Teleprompter Pause"
+              string: "SPACE"
+            - key: "DIALSW"
+              label: "Alarm"
+              string: "AlarmSet"
                     
       - layer: 2
         title: Email
@@ -39,6 +46,21 @@ shortcuts:
             - key: "0"
               label: "Shutdown"
               string: "LS-s h u t d o w n"
+      - layer: 4
+        title: "Alarm"
+        buttons:
+            - key: "1"
+              label: "Set"
+              string: "AlarmSet"
+            - key: "2"
+              label: "On"
+              string: "AlarmOn"
+            - key: "2"
+              label: "Off"
+              string: "AlarmOff"
+            - key: "DIALSW"
+              label: "Set"
+              string: "AlarmSet"
 
 
 

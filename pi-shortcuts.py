@@ -1,7 +1,6 @@
 #!/usr/bin/python
 
 # not pretty but trying to get a basic working prototype
-# TODO streamline the layer scanning
 
 import os
 import yaml
@@ -16,6 +15,38 @@ from datetime import datetime
 from PIL import Image
 from PIL import ImageDraw
 from PIL import ImageFont
+
+
+# Extra GPIO contols
+#gnd=30 and 34
+
+# wires round wrong way - swapped
+#JACK6MM = 18 and 20. gpio 24
+#POTSW = 25 and 26 gpio 7   
+
+
+#POTL = 29 gpio 5
+#POTR = 31 gpio 6
+#POTMID = gnd 34
+
+JACK6MM = 7
+DIALSW = 24
+DIALL = 5
+DIALR = 6
+
+counter = 10
+
+Enc_A = 5
+Enc_B = 6
+
+#POTMID = gnd 34
+
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(JACK6MM, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+GPIO.setup(DIALSW, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+GPIO.setup(DIALL, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+GPIO.setup(DIALR, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+
 
 # Raspberry Pi pin configuration:
 RST = None     # on the PiOLED this pin isnt used
@@ -57,6 +88,7 @@ draw.rectangle((0,0,width,height), outline=0, fill=0)
 #font = ImageFont.truetype("/home/pi/Ubuntu-C.ttf",10)
 font = ImageFont.load_default()
 font2 = ImageFont.truetype("/home/pi/Ubuntu-B.ttf",20)
+font3 = ImageFont.truetype("/home/pi/Ubuntu-B.ttf",18)
 
 
 # Read shortcuts YAML file
@@ -65,8 +97,11 @@ with open("/home/pi/pi-shortcuts.yaml", 'r') as stream:
     shortcuts = yaml.safe_load(stream)
 
 
-print( shortcuts )
-
+PANEL_HINTS = 0
+PANEL_CLOCK = 1
+PANEL_DEFAULTS = 2
+PANEL_MENU = 3
+PANEL_LAYER = False
 
 NULL_CHAR = chr(0)
 
@@ -380,6 +415,38 @@ class pinToChar():
     
     def getKey(self):
         
+        #print( "JACK %d " % GPIO.input(JACK6MM) )
+        #print( "DIALSW %d " % GPIO.input(DIALSW) )
+        if not GPIO.input(JACK6MM) :
+            return "JACK1"
+
+        if not GPIO.input(DIALSW) :
+            return "DIALSW"
+#
+#        if GPIO.input(DIALL) :
+#            return "DIALL"
+#
+#        if GPIO.input(DIALR) :
+#            return "DIALR"
+
+#        print( "diall")
+#        print( GPIO.input(DIALL))
+#        print( "dialr")
+#        print( GPIO.input(DIALR))
+
+#        DL=GPIO.input(DIALL)
+#        DR=GPIO.input(DIALR)
+#
+#        if DL == 0 and DR == 1 : 
+#            print ( "Dial1" )
+#        if DL == 1 and DR == 0 : 
+#            print ( "Dial2" )
+
+#        print( "dialsw")
+#        print( GPIO.input(DIALSW))
+#        print( "jac")
+#        print( GPIO.input(JACK6MM))
+
         # Set all columns as output low
         for j in range(len(self.COLUMN)):
             GPIO.setup(self.COLUMN[j], GPIO.OUT)
@@ -442,8 +509,8 @@ def lineScroll( canvas, y, string, startpos, speed, spacing = 0 ) :
    pos = startpos
 
    maxwidth, unused = canvas.textsize(string, font=font)
-   print("text width")
-   print(maxwidth)
+   #print("text width")
+   #print(maxwidth)
    x = pos
    for i, cc in enumerate(string):
          if x > width:
@@ -457,8 +524,8 @@ def lineScroll( canvas, y, string, startpos, speed, spacing = 0 ) :
     # Increment x position based on chacacter width.
          char_width, char_height = canvas.textsize(cc, font=font)
          x += char_width + spacing
-         print(x)
-         print(cc)
+         #print(x)
+         #print(cc)
 
    pos += speed
    # Start over if text has scrolled completely off left side of screen.
@@ -466,155 +533,10 @@ def lineScroll( canvas, y, string, startpos, speed, spacing = 0 ) :
            pos = width
    return pos
 
-
-
-if __name__ == '__main__':
-
-    # Initialize the keypad class
-    kp = pinToChar()
-
-    # scan and wait for a key press
-
-    layer = 1
-
-    cyclelayer = shortcuts['shortcuts']['layercycle']
-    print( "Layer cycle %s", ( cyclelayer ) )
-    curlayertitle=""
-    labels1=""
-    labels2=""
-#    maxwidth=0
-#    unused = 0
-#    startpos=width
-#    pos = startpos
-    pos2 = width
-    pos3 = width
-    pos4 = width
-    sending=""
-    motd_last=""
-    motd=""
-    while True:
-        # Draw a black filled box to clear the image.
-        draw.rectangle((0,0,width,height), outline=0, fill=0)
-
-        # Display current layer title inverted
-        draw.rectangle((0,0,width,8), outline=255, fill=255)
-        draw.text((1, -1),       curlayertitle ,  font=font, fill=0)
-
-        # Put in the current date and time 
-        draw.rectangle((60,-1,width,8), outline=0, fill=0)
-        now = datetime.strftime(datetime.now(),"%d/%m %H:%M")
-        draw.text((61, -1),       now,  font=font, fill=255)
-#        draw.text((0, 8),       labels1,  font=font, fill=255)
-        # Display the last macro sent (just to use the row for now)
-#        draw.text((0, 16),       sending,  font=font, fill=255)
-
-
-#        # Scroll the macro options for this layer
-#        maxwidth, unused = draw.textsize(labels1, font=font)
-#        x = pos
-#        for i, cc in enumerate(labels1):
-#             if x > width:
-#                 break;
-#             if x < -10:
-#                char_width, char_height = draw.textsize(cc, font=font)
-#                x += char_width
-#                continue
-#        # Draw text.
-#             draw.text((x, 8), cc, font=font, fill=255)
-#        # Increment x position based on chacacter width.
-#             char_width, char_height = draw.textsize(cc, font=font)
-#             x += char_width
-        #     print(x)
-        #     print(cc)
-
-        pos2 = lineScroll( draw, 7, labels1, pos2, -5 )
-        pos3 = lineScroll( draw, 15, sending, pos3, -8 )
-
-        # refresh MOTD text
-
-
-        try:
-            motdfile = os.stat ( "/dev/shm/pi-shortcuts.motd" )
-
-#            motmod = motdfile [ stat.ST_MTIME ] 
- 
-            if motd_last != motdfile :
-#            if True:
-                motd_last = motdfile
-                pos4=width
-                print("Reloading motd")
-                sending="MOTD Refreshed " + now
-                # file has been modified so reload
-                #ith open('/dev/shm/pi-shortcuts.motd') as f:
-                #   motd = f.readlines()
-                motd = Path('/dev/shm/pi-shortcuts.motd').read_text()
-                motd = motd.replace('\n', '')
-#                     motd = file.read().replace('\n', '')
-
-        except Exception as e:
-            motd = "MOTD: " +  str(e)
-            print(str(e))
-
-        pos4 = lineScroll( draw, 23, motd, pos4, -6, 4 )
-        # Display a simple fixed string on the bottom row for now
-        #draw.text((30, 24),       "line4" ,  font=font, fill=255)
-
-        # Render OLED
-        disp.image(image)
-        disp.display()
-#        pos += -5
-        # Start over if text has scrolled completely off left side of screen.
-#        if pos < -maxwidth:
-#                pos = startpos
-#        time.sleep(.1)
-
-
-        #c = None
-        #while c == None:
-        c = kp.getKey()
-
-        print(c)
-#        print(labels1)
-#        print(pos)
-        if c == ' ':
-            break
-
-        # TODO probe all of the pins and convert to char
-
-        # scan through key presses and find details
-
-        foundlayer = False
-        for layermap in shortcuts['shortcuts']['layers'] :
-           if layermap['layer'] == layer :
-               #print( layermap )
-               foundlayer = True
-               curlayertitle=layermap['title']
-               #print( layermap['title' ] )
-               labels1=""
-               for b in layermap['buttons'] :
-                   #print( "%s - %s" %  ( b['key'], b['label'] ) )
-                   labels1 = labels1 + " " +b['key'] + " - "+b['label']
-
-
-
-               for b in layermap['buttons'] :
-                   print(";;;;")
-                   print(b['key'])
-                   print(c)
-                   if str(b['key']) == str(c) :
-                      # send string to keyboard
-                      print( b['string'])
-                      sending = b['string']
-                      sendUSBHID( sending ) 
-                      #charToPins( c )
-
-
-        if not foundlayer :
-            layer = 1
-            print( "Cycle round to the start of the layers" )
-
-        if c == cyclelayer :
-            layer += 1
+def layerchange() :
+            global layer
+            global clockon
+            clockon = False
             print( "Next layer %s", ( layer ) )
             foundlayer = False
             while not foundlayer:
@@ -626,14 +548,336 @@ if __name__ == '__main__':
                 if not foundlayer :
                     layer = 1
 
+def rotation_decode(Enc_A):
+    global counter
+    global layer
+    global panelView
+    global PANEL_LAYER
+
+    PANEL_LAYER = True
+    time.sleep(0.0025)
+    Switch_A = GPIO.input(Enc_A)
+    Switch_B = GPIO.input(Enc_B)
+
+    if (Switch_A == 1) and (Switch_B == 0):
+        layer += 1
+        print( "direction -> " + str( layer))
+        while Switch_B == 0:
+            time.sleep(0.025)
+            Switch_B = GPIO.input(Enc_B)
+        while Switch_B == 1:
+            time.sleep(0.025)
+            Switch_B = GPIO.input(Enc_B)
+            
+    #    return
+
+    elif (Switch_A == 1) and (Switch_B == 1):
+        layer -= 1
+        print(  "direction <- " + str( layer ))
+        while Switch_A == 1:
+            time.sleep(0.025)
+            Switch_A = GPIO.input(Enc_A)
+    else:
+        pass
+
+    layerchange()
+
+
+if __name__ == '__main__':
+
+    GPIO.add_event_detect(Enc_A, GPIO.RISING, callback=rotation_decode, bouncetime=10)
+    # Initialize the keypad class
+    kp = pinToChar()
+
+    # scan and wait for a key press
+
+    layer = 1
+
+    cyclelayer = shortcuts['shortcuts']['defaults']['layercycle']
+    paneltoggle = shortcuts['shortcuts']['defaults']['paneltoggle']
+    print( "Layer cycle %s", ( cyclelayer ) )
+    curlayertitle=""
+    labels1=""
+    labels2=""
+    #clockon = False
+#    maxwidth=0
+#    unused = 0
+#    startpos=width
+#    pos = startpos
+    pos2 = width
+    pos3 = width
+    pos4 = width
+    sending=""
+    motd_last=""
+    motd=""
+    alarmtime="0000"
+    alarmactive = False
+
+    
+
+    panelView = PANEL_HINTS
+    while True:
+
+        # Draw a black filled box to clear the image.
+        draw.rectangle((0,0,width,height), outline=0, fill=0)
+
+        now = datetime.strftime(datetime.now(),"%d/%m %H:%M")
+
+        if alarmactive :
+            alarmnow = datetime.strftime(datetime.now(),"%H%M")
+            if alarmnow == alarmtime :
+                alarmback = 255
+                alarmfont  = 0
+                alarmcounter = 0
+                alarmactive = False
+                while  True:
+                    c = kp.getKey()
+                    if c != None: 
+                             break
+                    draw.rectangle((0,0,width,height), outline=alarmback, fill=alarmback)
+                    draw.text((10, 8),       "Alarm!" ,  font=font2, fill=alarmfont)
+                    disp.image(image)
+                    disp.display()
+                    alarmcounter = alarmcounter + 1
+                    time.sleep(0.01)
+                    print(alarmcounter)
+                    if alarmcounter > 10 :
+                        print("Invert")
+                        alarmcounter = 0
+                        if alarmfont == 0:
+                            alarmback = 0
+                            alarmfont = 255
+                        else:
+                            alarmback = 255
+                            alarmfont = 0
+
+
+        if PANEL_LAYER:
+            PANEL_LAYER = False
+
             # Draw a black filled box to clear the image.
             draw.rectangle((0,0,width,height), outline=0, fill=0)
             draw.text((1, 8),       curlayertitle ,  font=font2, fill=255)
 
             disp.image(image)
             disp.display()
-            time.sleep(0.25)
+            time.sleep(0.025)
+        else:       
 
+            if panelView == PANEL_CLOCK :
+                draw.text((15, -2),       curlayertitle ,  font=font, fill=255)
+                # Put in the current date and time 
+                nowwidth, unused = draw.textsize(now, font=font3)
+                draw.text(((width/2)-(nowwidth/2), 6),       now,  font=font3, fill=255)
+                if alarmactive:
+                    draw.text((72, -2),   "*",  font=font, fill=255)
+                draw.text((81, -2),       alarmtime[0:2]+":"+alarmtime[2:4],  font=font, fill=255)
+
+            if panelView == PANEL_HINTS:
+
+                # Display current layer title inverted
+                draw.rectangle((0,0,width,7), outline=255, fill=255)
+                draw.text((1, -2),       curlayertitle ,  font=font, fill=0)
+
+                if alarmactive:
+                    draw.text((52, -1),   "*",  font=font, fill=0)
+
+                # Put in the current date and time 
+                draw.rectangle((60,-2,width,7), outline=0, fill=0)
+                draw.text((61, -1),       now,  font=font, fill=255)
+                pos2 = lineScroll( draw, 6, labels1, pos2, -5 )
+                pos3 = lineScroll( draw, 14, sending, pos3, -8 )
+    #        draw.text((0, 8),       labels1,  font=font, fill=255)
+            # Display the last macro sent (just to use the row for now)
+    #        draw.text((0, 16),       sending,  font=font, fill=255)
+
+
+    #        # Scroll the macro options for this layer
+    #        maxwidth, unused = draw.textsize(labels1, font=font)
+    #        x = pos
+    #        for i, cc in enumerate(labels1):
+    #             if x > width:
+    #                 break;
+    #             if x < -10:
+    #                char_width, char_height = draw.textsize(cc, font=font)
+    #                x += char_width
+    #                continue
+    #        # Draw text.
+    #             draw.text((x, 8), cc, font=font, fill=255)
+    #        # Increment x position based on chacacter width.
+    #             char_width, char_height = draw.textsize(cc, font=font)
+    #             x += char_width
+            #     print(x)
+            #     print(cc)
+
+
+            # refresh MOTD text
+
+
+            try:
+                motdfile = os.stat ( "/dev/shm/pi-shortcuts.motd" )
+
+    #            motmod = motdfile [ stat.ST_MTIME ] 
+     
+                if motd_last != motdfile :
+    #            if True:
+                    motd_last = motdfile
+                    pos4=width
+                    print("Reloading motd")
+                    sending="MOTD Refreshed " + now
+                    # file has been modified so reload
+                    #ith open('/dev/shm/pi-shortcuts.motd') as f:
+                    #   motd = f.readlines()
+                    motd = Path('/dev/shm/pi-shortcuts.motd').read_text()
+                    motd = motd.replace('\n', '')
+    #                     motd = file.read().replace('\n', '')
+
+            except Exception as e:
+                motd = "MOTD: " +  str(e)
+                print(str(e))
+
+            pos4 = lineScroll( draw, 22, motd, pos4, -6, 4 )
+            # Display a simple fixed string on the bottom row for now
+            #draw.text((30, 24),       "line4" ,  font=font, fill=255)
+
+            # Render OLED
+            disp.image(image)
+            disp.display()
+    #        pos += -5
+            # Start over if text has scrolled completely off left side of screen.
+    #        if pos < -maxwidth:
+    #                pos = startpos
+    #        time.sleep(.1)
+
+
+            #c = None
+            #while c == None:
+            c = kp.getKey()
+
+            #print(c)
+    #        print(labels1)
+    #        print(pos)
+            if c == ' ':
+                break
+
+            # TODO probe all of the pins and convert to char
+
+            # scan through key presses and find details
+
+            foundlayer = False
+            for layermap in shortcuts['shortcuts']['layers'] :
+               if layermap['layer'] == layer :
+                   #print( layermap )
+                   foundlayer = True
+                   curlayertitle=layermap['title']
+                   #print( layermap['title' ] )
+                   labels1=""
+                   for b in layermap['buttons'] :
+                       #print( "%s - %s" %  ( b['key'], b['label'] ) )
+                       labels1 = labels1 + " " +b['key'] + " - "+b['label']
+
+
+
+                   for b in layermap['buttons'] :
+                       #print(";;;;")
+                       #print(b['key'])
+                       #print(c)
+                       if str(b['key']) == str(c) :
+                          print( b['string'])
+                          sending = b['string']
+
+                          if sending == "AlarmSet" :
+                              alarmset = False
+                              while not alarmset :
+                                    # Draw a black filled box to clear the image.
+                                    draw.rectangle((0,0,width,height), outline=0, fill=0)
+                                    draw.text((0, 0),  "Set alarm. # Exit",  font=font, fill=255)
+                                    draw.text((0, 8),       alarmtime[0:2]+":"+alarmtime[2:4],  font=font3, fill=255)
+
+                                    disp.image(image)
+                                    disp.display()
+                                    c2 = kp.getKey()
+                                    if c2 == cyclelayer :
+                                        alarmset = True
+                                        alarmactive = True
+                                    elif c2 != None:
+                                       alarmtime = alarmtime[1:4] + str(c2)
+                                       time.sleep(0.25)
+                                       
+                                    print( alarmtime )
+
+                                     
+                              c = None
+                              time.sleep(0.5)
+                          elif sending == "AlarmOn" :
+                               alarmactive = True
+                               # Draw a black filled box to clear the image.
+                               draw.rectangle((0,0,width,height), outline=0, fill=0)
+                               draw.text((0, 8),      "Alarm On",  font=font3, fill=255)
+
+                               disp.image(image)
+                               disp.display()
+                               time.sleep(0.5)
+                               c = None
+                          elif sending == "AlarmOff" :
+                               alarmactive = False
+                               # Draw a black filled box to clear the image.
+                               draw.rectangle((0,0,width,height), outline=0, fill=0)
+                               draw.text((0, 8),      "Alarm Off",  font=font3, fill=255)
+
+                               disp.image(image)
+                               disp.display()
+                               time.sleep(0.5)
+                               c = None
+                          else:
+                              # send string to keyboard
+                              sendUSBHID( sending ) 
+                              panelView = PANEL_HINTS
+                              #charToPins( c )
+
+
+        if not foundlayer :
+            layer = 1
+            print( "Cycle round to the start of the layers" )
+
+        if c == paneltoggle :
+            panelView = panelView + 1
+            if panelView > PANEL_MENU:
+                panelView = PANEL_HINTS
+            print( "CHange panel %d" % panelView)
+
+            #clockon = not clockon
+
+        if c == cyclelayer :
+            layer += 1
+            layerchange()
+
+#        if c == "DIALL" or c == "DIALR" :
+#            time.sleep(0.025)
+#            Switch_A = GPIO.input(Enc_A)
+#            Switch_B = GPIO.input(Enc_B)
+#
+#            if (Switch_A == 1) and (Switch_B == 0):
+#                layer += 1
+#                print( "direction -> " + str( layer))
+#                while Switch_B == 0:
+#                    Switch_B = GPIO.input(Enc_B)
+#                    time.sleep(0.05)
+#                while Switch_B == 1:
+#                    Switch_B = GPIO.input(Enc_B)
+#                    time.sleep(0.05)
+#            #    return
+#
+#            elif (Switch_A == 1) and (Switch_B == 1):
+#                layer -= 1
+#                print(  "direction <- " + str( layer ))
+#                while Switch_A == 1:
+#                    Switch_A = GPIO.input(Enc_A)
+#                    time.sleep(0.05)
+#            else:
+#                pass
+#
+#            layerchange()
 
 
 
